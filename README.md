@@ -183,6 +183,7 @@ It currently validates:
 - Mobile linting with `npm run lint`.
 - Kubernetes manifest rendering with `kubectl kustomize`.
 - Certificate automation tests and linting.
+- Ansible playbook syntax validation.
 
 The manual deployment workflow is in `.github/workflows/cloud-run-deploy.yml`.
 

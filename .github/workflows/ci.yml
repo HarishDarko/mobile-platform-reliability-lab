@@ -117,6 +117,27 @@ jobs:
       - name: Run automation lint
         run: python -m ruff check automation
 
+  ansible:
+    name: Ansible playbook validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ansible-core
+
+      - name: Run Ansible syntax check
+        run: ansible-playbook -i ansible/inventory.ini ansible/install_cert_monitor.yml --syntax-check
+
   gateway:
     name: Gateway tests and lint
     runs-on: ubuntu-latest
