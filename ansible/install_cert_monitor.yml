@@ -1,0 +1,39 @@
+- name: Install and schedule certificate expiry monitor
+  hosts: certificate_monitors
+  gather_facts: false
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Create certificate monitor install directory
+      ansible.builtin.file:
+        path: "{{ install_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy certificate monitor script
+      ansible.builtin.copy:
+        src: "{{ cert_monitor_script }}"
+        dest: "{{ install_dir }}/cert_check.py"
+        mode: "0755"
+
+    - name: Render endpoint list
+      ansible.builtin.template:
+        src: endpoints.txt.j2
+        dest: "{{ install_dir }}/endpoints.txt"
+        mode: "0644"
+
+    - name: Write runnable command example
+      ansible.builtin.copy:
+        dest: "{{ install_dir }}/run-cert-check.ps1"
+        mode: "0644"
+        content: |
+          python .\cert_check.py --endpoints-file .\endpoints.txt --warning-days {{ warning_days }} --critical-days {{ critical_days }}
+
+    - name: Show cron scheduling example for Linux targets
+      ansible.builtin.debug:
+        msg: >-
+          Linux cron example: {{ check_schedule_minute }} {{ check_schedule_hour }} * * *
+          python {{ install_dir }}/cert_check.py --endpoints-file {{ install_dir }}/endpoints.txt
+          --warning-days {{ warning_days }} --critical-days {{ critical_days }}
+

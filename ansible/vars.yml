@@ -1,0 +1,10 @@
+install_dir: "{{ lookup('env', 'PWD') | default(playbook_dir + '/../.ansible-demo/cert-monitor', true) }}"
+cert_monitor_script: "{{ playbook_dir }}/../automation/cert_check.py"
+warning_days: 30
+critical_days: 14
+check_schedule_minute: "0"
+check_schedule_hour: "9"
+certificate_endpoints:
+  - https://www.google.com
+  - https://www.github.com
+

@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node / Expo
+node_modules/
+.expo/
+dist/
+web-build/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local build artifacts
+coverage/
+htmlcov/
+*.log
+
+# Private local workspace notes
+.local/
+docs/local-*.md
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

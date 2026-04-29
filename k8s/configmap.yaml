@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: mobile-platform-lab
+  labels:
+    app.kubernetes.io/name: mobile-platform-api
+data:
+  APP_ENV: demo
+  LOG_FORMAT: json
+  API_PUBLIC_NAME: mobile-platform-reliability-api
+
