@@ -57,6 +57,7 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --set-env-vars ALLOWED_ORIGINS="*" \
+            --set-secrets DEMO_RUNTIME_SECRET=demo-runtime-secret:latest \
             --project "${PROJECT_ID}"
 
       - name: Print service URL

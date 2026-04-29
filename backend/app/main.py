@@ -68,8 +68,12 @@ async def request_logging_middleware(request: Request, call_next: Any) -> JSONRe
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok", "service": "mobile-platform-reliability-api"}
+def health() -> dict[str, str | bool]:
+    return {
+        "status": "ok",
+        "service": "mobile-platform-reliability-api",
+        "runtime_secret_configured": bool(os.getenv("DEMO_RUNTIME_SECRET")),
+    }
 
 
 @app.get("/accounts", response_model=list[Account])

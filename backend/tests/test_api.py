@@ -11,6 +11,7 @@ def test_health_returns_ok() -> None:
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+    assert response.json()["runtime_secret_configured"] is False
     assert "x-request-id" in response.headers
 
 
@@ -67,4 +68,3 @@ def test_metrics_returns_prometheus_style_text() -> None:
     assert response.status_code == 200
     assert "lab_requests_total" in response.text
     assert "lab_payments_total" in response.text
-

@@ -687,3 +687,34 @@ ARTIFACT_REPOSITORY
 Explanation:
 
 > The CI workflow proves the code is safe to merge by running tests, lint, Docker build, mobile TypeScript checks, mobile lint, Kubernetes rendering, gateway tests, and automation tests. The separate deployment workflow is manually triggered and builds the backend image, pushes it to Artifact Registry, and deploys it to Cloud Run. In a real team, I would protect this workflow with branch rules, approvals, least-privilege IAM, and environment-specific secrets.
+
+## 24. Runtime Secret Manager Integration
+
+The Cloud Run deployment workflow injects a demo runtime secret from Secret Manager:
+
+```text
+DEMO_RUNTIME_SECRET=demo-runtime-secret:latest
+```
+
+Purpose:
+
+- Keep runtime secrets out of source code.
+- Keep secrets out of Docker images.
+- Let Cloud Run read secrets at runtime through IAM.
+- Let the app verify secret configuration without exposing the value.
+
+The `/health` endpoint reports only whether the secret exists:
+
+```json
+{
+  "status": "ok",
+  "service": "mobile-platform-reliability-api",
+  "runtime_secret_configured": true
+}
+```
+
+The secret value is never printed by the API.
+
+Explanation:
+
+> Runtime secrets should come from a secret vault such as GCP Secret Manager. The app should not log or return secret values. For this lab, Cloud Run receives a fake demo secret and the health endpoint only confirms whether runtime secret configuration is present.

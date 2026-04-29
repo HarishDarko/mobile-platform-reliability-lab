@@ -195,6 +195,8 @@ GitHub Actions -> Docker build -> Artifact Registry push -> Cloud Run deploy
 
 It uses GitHub Actions secrets as placeholders for Google Cloud authentication. No real cloud credentials are committed to the repository.
 
+The deployment workflow also demonstrates runtime secret injection from GCP Secret Manager. The backend health endpoint reports whether the runtime secret is configured without exposing the secret value.
+
 ## Kubernetes
 
 The `k8s/` folder contains manifest examples for running the backend in Kubernetes.
