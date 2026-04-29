@@ -138,6 +138,34 @@ jobs:
       - name: Run Ansible syntax check
         run: ansible-playbook -i ansible/inventory.ini ansible/install_cert_monitor.yml --syntax-check
 
+  apigee:
+    name: Apigee proxy XML validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Validate Apigee XML files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          xml_files = sorted(Path("apigee/apiproxy").rglob("*.xml"))
+          if not xml_files:
+              raise SystemExit("No Apigee XML files found")
+
+          for xml_file in xml_files:
+              ET.parse(xml_file)
+              print(f"validated {xml_file}")
+          PY
+
   gateway:
     name: Gateway tests and lint
     runs-on: ubuntu-latest

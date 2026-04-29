@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TargetEndpoint name="default">
+  <Description>Routes approved mobile API traffic to the backend service.</Description>
+  <PreFlow name="PreFlow">
+    <Request/>
+    <Response/>
+  </PreFlow>
+  <Flows/>
+  <PostFlow name="PostFlow">
+    <Request/>
+    <Response/>
+  </PostFlow>
+  <HTTPTargetConnection>
+    <Properties>
+      <Property name="target.copy.pathsuffix">true</Property>
+    </Properties>
+    <URL>https://replace-with-cloud-run-service-url</URL>
+  </HTTPTargetConnection>
+</TargetEndpoint>

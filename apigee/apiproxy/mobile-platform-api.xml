@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy name="mobile-platform-api">
+  <DisplayName>Mobile Platform API</DisplayName>
+  <Description>Demo Apigee proxy bundle for the mobile platform reliability lab.</Description>
+  <Policies>
+    <Policy>Add-Proxy-Headers</Policy>
+    <Policy>Quota</Policy>
+    <Policy>Spike-Arrest</Policy>
+    <Policy>Verify-API-Key</Policy>
+  </Policies>
+  <ProxyEndpoints>
+    <ProxyEndpoint>default</ProxyEndpoint>
+  </ProxyEndpoints>
+  <TargetEndpoints>
+    <TargetEndpoint>default</TargetEndpoint>
+  </TargetEndpoints>
+</APIProxy>

@@ -33,6 +33,7 @@ flowchart LR
 
 - `backend/` - Python FastAPI API with fake data, tests, structured logging, and incident simulation endpoints.
 - `gateway/` - Small API gateway simulator showing API proxy, API key, rate limit, target routing, and request ID concepts.
+- `apigee/` - Apigee-style proxy bundle with API key, quota, spike arrest, and target routing policy examples.
 - `mobile/` - Expo React Native TypeScript app that calls the backend through an environment-based API URL.
 - `k8s/` - Kubernetes namespace, deployment, service, config, secret placeholder, and optional ingress examples.
 - `automation/` - Python certificate expiry monitor.
@@ -184,6 +185,7 @@ It currently validates:
 - Kubernetes manifest rendering with `kubectl kustomize`.
 - Certificate automation tests and linting.
 - Ansible playbook syntax validation.
+- Apigee proxy XML validation.
 
 The manual deployment workflow is in `.github/workflows/cloud-run-deploy.yml`.
 
