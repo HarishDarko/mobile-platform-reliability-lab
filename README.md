@@ -1,6 +1,6 @@
-# mobile-platform-reliability-lab
+# Mobile Platform Reliability Lab
 
-Public learning lab for mobile platform DevOps and SRE practice.
+Public learning lab for mobile platform DevOps, API reliability, and SRE practice.
 
 This repository uses fake demo data only. It is not affiliated with any bank, employer, or internal platform. It contains no real customer data, no real credentials, and no production secrets.
 
@@ -10,24 +10,47 @@ The goal is to build a small, explainable workflow that connects mobile delivery
 
 It is intentionally not enterprise scale. The point is to show initiative, technical range, and the ability to reason through a mobile platform delivery path.
 
+## What This Demonstrates
+
+- Expo React Native TypeScript client calling a cloud-hosted backend through environment-based configuration.
+- Python FastAPI backend with fake demo data, structured logs, health checks, metrics-style output, and incident simulation endpoints.
+- Docker image build and Cloud Run deployment through Artifact Registry.
+- GitHub Actions CI for backend, mobile, Docker, Kubernetes manifests, certificate automation, Ansible, gateway, and Apigee proxy XML validation.
+- GitHub Actions deployment to Cloud Run using Google Cloud Workload Identity Federation instead of service account keys.
+- GCP Secret Manager runtime secret injection without exposing secret values.
+- Kubernetes manifests for GKE/platform discussion.
+- Python certificate expiry automation and Ansible configuration automation.
+- API management concepts through a local gateway simulator and an Apigee-style proxy bundle.
+
 ## Architecture
 
 ```mermaid
 flowchart LR
-    Mobile["Expo React Native app<br/>TypeScript"] --> ApiClient["API client<br/>environment-based URL"]
-    ApiClient --> Gateway["API gateway style boundary<br/>Apigee concept discussion"]
-    Gateway --> Backend["FastAPI backend<br/>fake accounts and payments"]
-    Backend --> Logs["Structured logs"]
-    Backend --> Metrics["/metrics endpoint"]
-    Backend --> Docker["Docker image"]
-    Docker --> K8s["Kubernetes manifests"]
-    K8s --> GCP["GCP path<br/>GKE or Cloud Run fallback"]
-    Certs["Python certificate monitor"] --> Alerts["OK / WARNING / CRITICAL exit codes"]
-    Ansible["Ansible playbook"] --> Certs
-    CI["GitHub Actions"] --> Backend
-    CI --> Mobile
-    CI --> Docker
+    Mobile["Expo React Native app<br/>TypeScript"] --> ApiClient["API client<br/>EXPO_PUBLIC_API_URL"]
+    ApiClient --> Gateway["API gateway layer<br/>local simulator + Apigee proxy bundle"]
+    Gateway --> CloudRun["Cloud Run<br/>FastAPI backend"]
+    CloudRun --> Health["/health<br/>Secret Manager configured"]
+    CloudRun --> Logs["Structured logs<br/>request IDs"]
+    CloudRun --> Metrics["/metrics<br/>/slow /error"]
+    Actions["GitHub Actions"] --> Checks["CI checks<br/>tests lint typecheck kustomize"]
+    Actions --> Deploy["Deploy workflow<br/>OIDC to GCP"]
+    Deploy --> Registry["Artifact Registry<br/>Docker image"]
+    Registry --> CloudRun
+    SecretManager["GCP Secret Manager"] --> CloudRun
+    K8s["Kubernetes manifests<br/>GKE-ready discussion"] -.-> CloudRun
+    Ansible["Ansible playbook<br/>syntax checked in CI"] --> Certs["Python certificate monitor"]
+    Certs --> Alerts["OK / WARNING / CRITICAL"]
 ```
+
+## Current Working Proof Points
+
+- Public GitHub repository with passing CI.
+- Manual GitHub Actions deployment workflow successfully deploys the backend to Cloud Run.
+- Cloud Run backend is reachable over HTTPS.
+- Runtime secret is injected from GCP Secret Manager and verified by `/health` without exposing the value.
+- Apigee proxy bundle XML is validated in CI.
+- Ansible playbook syntax is validated in CI.
+- Kubernetes manifests render with Kustomize in CI.
 
 ## Folder Map
 
@@ -120,7 +143,7 @@ Phase 10 adds Apigee/API management overview:
 - Apigee Hybrid high-level model.
 - Mobile API troubleshooting through a gateway.
 
-Phase 11 adds a local API gateway simulator:
+Phase 11 adds API gateway implementation artifacts:
 
 - Mobile-facing `/mobile/v1` routes.
 - Backend target routing.
@@ -128,6 +151,13 @@ Phase 11 adds a local API gateway simulator:
 - Simple rate limiting.
 - Request ID propagation.
 - Gateway tests and CI validation.
+- Apigee-style proxy bundle with API key, quota, spike arrest, and target routing policy examples.
+
+Phase 12 adds secure cloud runtime configuration:
+
+- Workload Identity Federation for GitHub Actions to GCP authentication.
+- Secret Manager runtime secret injection for Cloud Run.
+- Health endpoint confirms whether runtime secret configuration is present without returning the secret value.
 
 ## Local Backend Run
 
@@ -292,9 +322,11 @@ This explains iOS and Android build/release concepts, including macOS runners, X
 
 See `docs/apigee-api-management.md`.
 
-The lab does not deploy Apigee, but it explains where Apigee would sit between the Expo mobile app and FastAPI backend, and how gateway policies, routing, analytics, certificates, quotas, and rate limits affect mobile API reliability.
+The lab does not deploy a real Apigee Hybrid runtime, but it explains where Apigee would sit between the Expo mobile app and FastAPI backend, and how gateway policies, routing, analytics, certificates, quotas, and rate limits affect mobile API reliability.
 
 The `gateway/` folder implements a small local API gateway simulator to make those API management ideas concrete without requiring a real Apigee organization.
+
+The `apigee/` folder contains an Apigee-style proxy bundle with proxy endpoint, target endpoint, API key verification, quota, spike arrest, and header enrichment policy examples. CI validates the proxy XML files.
 
 ## How This Maps To Mobile Platform DevOps
 
@@ -310,3 +342,6 @@ Mobile platform engineers often sit between app teams, API teams, CI/CD systems,
 ## Future Improvements
 
 - Add more operational runbooks.
+- Add Terraform for repeatable GCP resource provisioning.
+- Add optional GKE deployment walkthrough.
+- Add sample Splunk or Dynatrace dashboard/query examples.
