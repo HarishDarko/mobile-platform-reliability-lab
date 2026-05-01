@@ -20,6 +20,7 @@ Terraform is responsible for foundational cloud resources:
 - IAM permissions for deploy and runtime access.
 - IAM access for an existing GitHub Actions deployer service account.
 - Remote Terraform state in GCS is used by GitHub Actions, but the state bucket itself is a one-time bootstrap resource.
+- Container API is enabled so a temporary GKE Autopilot cluster can be created for the live Kubernetes demo.
 
 Terraform intentionally does not own the GitHub OIDC bootstrap resources:
 

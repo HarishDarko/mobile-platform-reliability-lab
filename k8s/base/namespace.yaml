@@ -4,4 +4,3 @@ metadata:
   name: mobile-platform-lab
   labels:
     app.kubernetes.io/part-of: mobile-platform-reliability-lab
-

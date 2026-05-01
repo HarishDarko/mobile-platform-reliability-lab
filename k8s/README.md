@@ -6,13 +6,9 @@ These manifests are intentionally small and public-safe. They do not include rea
 
 ## Files
 
-- `namespace.yaml` - Creates an isolated namespace for the lab.
-- `configmap.yaml` - Stores non-secret runtime configuration.
-- `secret-example.yaml` - Shows the shape of a Kubernetes Secret with placeholder values only.
-- `deployment.yaml` - Runs two backend pods with health probes and resource requests/limits.
-- `service.yaml` - Creates an internal stable service name for the backend pods.
-- `ingress-example.yaml` - Optional example for exposing the service through an ingress controller.
-- `kustomization.yaml` - Groups the core manifests so they can be applied together.
+- `base/` - Core manifests for namespace, config, placeholder secret, deployment, service, and optional ingress.
+- `overlays/gke/` - GKE Autopilot overlay that uses an Artifact Registry image placeholder and exposes the backend with a LoadBalancer service.
+- `kustomization.yaml` - Renders the base manifests for local validation.
 
 ## Why It Matters
 
@@ -32,6 +28,7 @@ If `kubectl` is installed:
 
 ```powershell
 kubectl kustomize .\k8s
+kubectl kustomize .\k8s\overlays\gke
 ```
 
 Expected result:
@@ -67,6 +64,22 @@ mobile-platform-reliability-api:local
 
 That works only when the Kubernetes cluster can access that local image. For a real cluster, the image would be pushed to a registry such as Artifact Registry, then the deployment image would be updated to that registry path.
 
+## GKE LoadBalancer Demo
+
+For the live GKE Autopilot and external LoadBalancer walkthrough, see:
+
+```text
+docs/gke-live-loadbalancer-demo.md
+```
+
+The GKE overlay intentionally uses this placeholder:
+
+```text
+GKE_IMAGE_URI_PLACEHOLDER:demo
+```
+
+The live demo replaces it at deploy time with the Artifact Registry image URI so no real project-specific image path needs to be committed.
+
 ## Cleanup
 
 ```powershell
@@ -74,4 +87,3 @@ kubectl delete namespace mobile-platform-lab
 ```
 
 Deleting the namespace removes the demo deployment, service, config map, and placeholder secret.
-

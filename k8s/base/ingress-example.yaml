@@ -20,4 +20,3 @@ spec:
                 name: mobile-platform-api
                 port:
                   name: http
-

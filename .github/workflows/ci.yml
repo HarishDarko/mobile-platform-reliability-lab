@@ -93,6 +93,9 @@ jobs:
       - name: Render Kubernetes manifests
         run: kubectl kustomize k8s
 
+      - name: Render GKE LoadBalancer overlay
+        run: kubectl kustomize k8s/overlays/gke
+
   terraform:
     name: Terraform validation
     runs-on: ubuntu-latest

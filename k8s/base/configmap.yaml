@@ -9,4 +9,3 @@ data:
   APP_ENV: demo
   LOG_FORMAT: json
   API_PUBLIC_NAME: mobile-platform-reliability-api
-

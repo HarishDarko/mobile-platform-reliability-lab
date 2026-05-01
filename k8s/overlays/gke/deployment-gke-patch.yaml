@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mobile-platform-api
+  namespace: mobile-platform-lab
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      annotations:
+        lab.mobile-platform.io/runtime: gke-autopilot
+    spec:
+      containers:
+        - name: api
+          imagePullPolicy: Always
