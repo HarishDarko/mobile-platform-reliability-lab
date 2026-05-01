@@ -19,6 +19,7 @@ Terraform is responsible for foundational cloud resources:
 - Dedicated Cloud Run runtime service account.
 - IAM permissions for deploy and runtime access.
 - IAM access for an existing GitHub Actions deployer service account.
+- Remote Terraform state in GCS is used by GitHub Actions, but the state bucket itself is a one-time bootstrap resource.
 
 Terraform intentionally does not own the GitHub OIDC bootstrap resources:
 
@@ -28,6 +29,16 @@ Terraform intentionally does not own the GitHub OIDC bootstrap resources:
 - GitHub Actions secrets and variables.
 
 Those bootstrap resources must exist before GitHub Actions can run Terraform.
+
+The GitHub Actions workflows expect these repository variables and secrets:
+
+- Variable: `GCP_PROJECT_ID`
+- Variable: `GCP_REGION`
+- Variable: `ARTIFACT_REPOSITORY`
+- Variable: `TF_STATE_BUCKET`
+- Secret: `GCP_WORKLOAD_IDENTITY_PROVIDER`
+- Secret: `GCP_SERVICE_ACCOUNT`
+- Secret: `DEMO_RUNTIME_SECRET_VALUE`
 
 GitHub Actions remains responsible for application release:
 
@@ -101,7 +112,7 @@ Before destroying the foundation, delete the Cloud Run service that uses the Art
 
 For a real team:
 
-- Use a remote backend such as GCS for Terraform state.
+- Use a remote backend such as GCS for Terraform state. This lab uses a GCS backend configured at workflow runtime.
 - Enable state locking where supported.
 - Restrict access to state because it may contain sensitive metadata.
 - Separate dev, test, and production variables/state.

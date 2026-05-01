@@ -41,14 +41,19 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform init
-        run: terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=mobile-platform-reliability-lab"
 
       - name: Terraform apply
         run: terraform apply -auto-approve
 
       - name: Add fake demo secret version
         run: |
-          printf '%s' 'demo-secret-value-not-real' | \
+          printf '%s' "${DEMO_RUNTIME_SECRET_VALUE}" | \
             gcloud secrets versions add demo-runtime-secret \
               --data-file=- \
               --project "${{ vars.GCP_PROJECT_ID }}"
+        env:
+          DEMO_RUNTIME_SECRET_VALUE: ${{ secrets.DEMO_RUNTIME_SECRET_VALUE }}

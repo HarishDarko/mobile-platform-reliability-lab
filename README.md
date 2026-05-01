@@ -281,12 +281,11 @@ The `infra/terraform/` folder describes the GCP foundation as Terraform:
 - Required GCP APIs.
 - Artifact Registry repository.
 - Secret Manager secret metadata.
-- GitHub deployer service account.
 - Cloud Run runtime service account.
 - IAM bindings.
-- Workload Identity Federation for GitHub Actions.
+- Access for an existing GitHub Actions deployer service account.
 
-Terraform does not store secret values and does not create service account JSON keys.
+Terraform does not store secret values, does not create service account JSON keys, and does not own the GitHub OIDC bootstrap resources. The GitHub workflows use GCS remote state through a `TF_STATE_BUCKET` repository variable.
 
 Validate locally:
 
@@ -397,6 +396,5 @@ Mobile platform engineers often sit between app teams, API teams, CI/CD systems,
 ## Future Improvements
 
 - Add more operational runbooks.
-- Add Terraform remote state example using a GCS backend.
 - Add optional GKE deployment walkthrough.
 - Add sample Splunk or Dynatrace dashboard/query examples.
