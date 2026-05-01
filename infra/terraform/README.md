@@ -30,7 +30,7 @@ Terraform intentionally does not own the GitHub OIDC bootstrap resources:
 
 Those bootstrap resources must exist before GitHub Actions can run Terraform.
 
-The GitHub Actions workflows expect these repository variables and secrets:
+`backend.tf` contains a non-secret placeholder bucket so Terraform validation works in CI. The GitHub Actions workflows override that placeholder at runtime using these repository variables and secrets:
 
 - Variable: `GCP_PROJECT_ID`
 - Variable: `GCP_REGION`
