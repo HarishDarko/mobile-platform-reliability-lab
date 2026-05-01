@@ -46,6 +46,7 @@ Bootstrap lesson from the live test:
 ```text
 The GitHub deployer service account needed roles/container.admin to create the cluster.
 It also needed roles/compute.viewer because Terraform reads GKE-managed instance group metadata.
+These role bindings are now included in Terraform and the optional GKE cluster depends on them.
 ```
 
 ## 2. Build Image And Deploy To GKE

@@ -37,12 +37,14 @@ The project also needs the Cloud Resource Manager API enabled before Terraform c
 gcloud services enable cloudresourcemanager.googleapis.com --project YOUR_PROJECT_ID
 ```
 
-When `enable_gke_autopilot=true`, the GitHub deployer identity also needs GKE and Compute read permissions as bootstrap access:
+When `enable_gke_autopilot=true`, the GitHub deployer identity also needs GKE and Compute read permissions:
 
 ```text
 roles/container.admin
 roles/compute.viewer
 ```
+
+These bindings are now managed by Terraform, and the optional GKE cluster depends on them. The deployer still needs enough bootstrap IAM to run Terraform and grant project IAM bindings in the first place.
 
 `roles/compute.viewer` is needed because the Terraform Google provider reads GKE-managed instance group metadata while finalizing cluster state.
 

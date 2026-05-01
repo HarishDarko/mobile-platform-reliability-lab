@@ -55,6 +55,18 @@ resource "google_project_iam_member" "deployer_can_manage_cloud_run" {
   member  = "serviceAccount:${var.github_deployer_service_account_email}"
 }
 
+resource "google_project_iam_member" "deployer_can_manage_gke" {
+  project = var.project_id
+  role    = "roles/container.admin"
+  member  = "serviceAccount:${var.github_deployer_service_account_email}"
+}
+
+resource "google_project_iam_member" "deployer_can_read_compute_metadata" {
+  project = var.project_id
+  role    = "roles/compute.viewer"
+  member  = "serviceAccount:${var.github_deployer_service_account_email}"
+}
+
 resource "google_service_account_iam_member" "deployer_can_use_runtime_identity" {
   service_account_id = google_service_account.cloud_run_runtime.name
   role               = "roles/iam.serviceAccountUser"
@@ -80,5 +92,9 @@ resource "google_container_cluster" "autopilot" {
     channel = "REGULAR"
   }
 
-  depends_on = [google_project_service.required]
+  depends_on = [
+    google_project_service.required,
+    google_project_iam_member.deployer_can_manage_gke,
+    google_project_iam_member.deployer_can_read_compute_metadata,
+  ]
 }
