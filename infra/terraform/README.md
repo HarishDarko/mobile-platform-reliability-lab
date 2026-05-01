@@ -30,6 +30,12 @@ Terraform intentionally does not own the GitHub OIDC bootstrap resources:
 
 Those bootstrap resources must exist before GitHub Actions can run Terraform.
 
+The project also needs the Cloud Resource Manager API enabled before Terraform can manage project IAM:
+
+```powershell
+gcloud services enable cloudresourcemanager.googleapis.com --project YOUR_PROJECT_ID
+```
+
 `backend.tf` contains a non-secret placeholder bucket so Terraform validation works in CI. The GitHub Actions workflows override that placeholder at runtime using these repository variables and secrets:
 
 - Variable: `GCP_PROJECT_ID`

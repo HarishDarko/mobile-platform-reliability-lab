@@ -287,6 +287,8 @@ The `infra/terraform/` folder describes the GCP foundation as Terraform:
 
 Terraform does not store secret values, does not create service account JSON keys, and does not own the GitHub OIDC bootstrap resources. The GitHub workflows use GCS remote state through a `TF_STATE_BUCKET` repository variable.
 
+The Cloud Resource Manager API must be enabled as part of bootstrap before Terraform can manage project IAM.
+
 Validate locally:
 
 ```powershell
