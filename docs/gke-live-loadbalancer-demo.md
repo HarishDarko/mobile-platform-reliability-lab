@@ -16,71 +16,55 @@ Docker image in Artifact Registry
 
 Cloud Run remains the simpler production-style demo path for this lab. GKE shows the Kubernetes runtime path.
 
-## 1. Create Foundation And Image
+## 1. Create Foundation And GKE Cluster
 
-Run these from GitHub Actions:
+Run this from GitHub Actions:
 
 ```text
 Terraform Apply
-Deploy Backend To Cloud Run
 ```
 
-Use image tag:
+Set workflow input:
 
 ```text
-demo
+enable_gke_autopilot = true
+gke_cluster_name = mobile-platform-lab-autopilot
 ```
 
-The deployment workflow builds and pushes this image:
+Terraform creates:
 
 ```text
-northamerica-northeast1-docker.pkg.dev/PROJECT_ID/ARTIFACT_REPOSITORY/mobile-platform-reliability-api:demo
+Artifact Registry
+Secret Manager metadata
+Cloud Run runtime service account
+IAM bindings
+GKE Autopilot cluster
 ```
 
-## 2. Create Temporary GKE Autopilot Cluster
+## 2. Build Image And Deploy To GKE
 
-PowerShell:
+Run this from GitHub Actions:
 
-```powershell
-$ProjectId = "mobile-devops-494819"
-$Region = "northamerica-northeast1"
-$Cluster = "mobile-platform-lab-autopilot"
-
-gcloud services enable container.googleapis.com --project $ProjectId
-
-gcloud container clusters create-auto $Cluster `
-  --project $ProjectId `
-  --region $Region `
-  --release-channel regular
-
-gcloud container clusters get-credentials $Cluster `
-  --project $ProjectId `
-  --region $Region
+```text
+Deploy Backend To GKE
 ```
 
-Successful output should show the cluster created and kubeconfig updated.
+Use inputs:
 
-## 3. Deploy The GKE Overlay
-
-PowerShell:
-
-```powershell
-$ProjectId = "mobile-devops-494819"
-$Region = "northamerica-northeast1"
-$Repository = "mobile-platform-lab"
-$ImageTag = "demo"
-$ImageUri = "$Region-docker.pkg.dev/$ProjectId/$Repository/mobile-platform-reliability-api:$ImageTag"
-
-kubectl kustomize .\k8s\overlays\gke |
-  ForEach-Object { $_ -replace "GKE_IMAGE_URI_PLACEHOLDER:demo", $ImageUri } |
-  kubectl apply -f -
+```text
+image_tag = demo
+cluster_name = mobile-platform-lab-autopilot
 ```
 
-This keeps the repo public-safe while still deploying the real image during the local demo.
+The workflow builds the backend image, pushes it to Artifact Registry, gets GKE credentials, applies the GKE Kubernetes overlay, waits for rollout, waits for the external LoadBalancer IP, and smoke-tests `/health` and `/accounts`.
 
-## 4. Verify Rollout
+## 3. Optional Local Verification
 
 ```powershell
+gcloud container clusters get-credentials mobile-platform-lab-autopilot `
+  --project mobile-devops-494819 `
+  --region northamerica-northeast1
+
 kubectl rollout status deployment/mobile-platform-api -n mobile-platform-lab --timeout=180s
 kubectl get pods -n mobile-platform-lab -o wide
 kubectl get service mobile-platform-api -n mobile-platform-lab
@@ -92,7 +76,7 @@ Wait until `EXTERNAL-IP` is no longer pending.
 kubectl get service mobile-platform-api -n mobile-platform-lab -w
 ```
 
-## 5. Test The Public API
+## 4. Test The Public API
 
 PowerShell:
 
@@ -108,7 +92,7 @@ Browser:
 http://EXTERNAL_IP/docs
 ```
 
-## 6. Troubleshooting Commands
+## 5. Troubleshooting Commands
 
 ```powershell
 kubectl describe deployment mobile-platform-api -n mobile-platform-lab
@@ -125,21 +109,25 @@ Common issues:
 - Readiness probe failure: container is running but `/health` is failing.
 - 404 on `/`: expected, because the API exposes `/health`, `/docs`, `/accounts`, and other specific routes.
 
-## 7. Cleanup
+## 6. Cleanup
 
-Delete the app namespace first:
+You can delete the namespace first if you want to remove the LoadBalancer before cluster deletion:
 
 ```powershell
 kubectl delete namespace mobile-platform-lab --ignore-not-found
 ```
 
-Delete the cluster:
+Then run this from GitHub Actions:
 
-```powershell
-gcloud container clusters delete mobile-platform-lab-autopilot `
-  --project mobile-devops-494819 `
-  --region northamerica-northeast1 `
-  --quiet
+```text
+Terraform Destroy
+```
+
+Use the same cluster input values:
+
+```text
+enable_gke_autopilot = true
+gke_cluster_name = mobile-platform-lab-autopilot
 ```
 
 Verify cleanup:
@@ -150,12 +138,6 @@ gcloud compute forwarding-rules list --project mobile-devops-494819
 gcloud compute addresses list --project mobile-devops-494819
 ```
 
-Then run:
-
-```text
-Terraform Destroy
-```
-
 ## Interview Explanation
 
-> I used Cloud Run for the simple serverless container path, then deployed the same backend image to GKE Autopilot to understand the Kubernetes runtime path. The Kubernetes deployment used replicas, probes, resource requests/limits, rolling update settings, and a LoadBalancer service for public access. I verified rollout status, pods, service external IP, logs, and `/health`, then deleted the namespace and cluster to control cost.
+> I first created GKE manually to understand the moving parts, then moved the GKE Autopilot cluster into Terraform. Terraform can now create and destroy the temporary cluster, while GitHub Actions builds the backend image, deploys the Kubernetes overlay, waits for rollout, waits for the external LoadBalancer IP, and smoke-tests the public API.

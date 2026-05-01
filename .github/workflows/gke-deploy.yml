@@ -1,0 +1,100 @@
+name: Deploy Backend To GKE
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Docker image tag to build and deploy
+        required: true
+        default: demo
+      cluster_name:
+        description: GKE Autopilot cluster name
+        required: true
+        default: mobile-platform-lab-autopilot
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+  REPOSITORY: ${{ vars.ARTIFACT_REPOSITORY }}
+  IMAGE_NAME: mobile-platform-reliability-api
+
+jobs:
+  deploy:
+    name: Build, push, and deploy to GKE
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: gke-gcloud-auth-plugin
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.30.2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+
+      - name: Build backend image
+        run: |
+          IMAGE_URI="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:${{ inputs.image_tag }}"
+          docker build -t "${IMAGE_URI}" backend
+          echo "IMAGE_URI=${IMAGE_URI}" >> "$GITHUB_ENV"
+
+      - name: Push backend image
+        run: docker push "${IMAGE_URI}"
+
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials "${{ inputs.cluster_name }}" \
+            --project "${PROJECT_ID}" \
+            --region "${REGION}"
+
+      - name: Deploy Kubernetes overlay
+        run: |
+          kubectl kustomize k8s/overlays/gke \
+            | sed "s|GKE_IMAGE_URI_PLACEHOLDER:demo|${IMAGE_URI}|g" \
+            | kubectl apply -f -
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/mobile-platform-api -n mobile-platform-lab --timeout=240s
+
+      - name: Print service status
+        run: |
+          kubectl get pods -n mobile-platform-lab -o wide
+          kubectl get service mobile-platform-api -n mobile-platform-lab
+
+      - name: Wait for LoadBalancer IP
+        run: |
+          for i in {1..30}; do
+            EXTERNAL_IP="$(kubectl get service mobile-platform-api -n mobile-platform-lab -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
+            if [ -n "${EXTERNAL_IP}" ]; then
+              echo "GKE_LOAD_BALANCER_URL=http://${EXTERNAL_IP}" >> "$GITHUB_STEP_SUMMARY"
+              echo "EXTERNAL_IP=${EXTERNAL_IP}" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            kubectl get service mobile-platform-api -n mobile-platform-lab
+            sleep 10
+          done
+          echo "Timed out waiting for LoadBalancer external IP" >&2
+          exit 1
+
+      - name: Smoke test public API
+        run: |
+          curl --fail "http://${EXTERNAL_IP}/health"
+          curl --fail "http://${EXTERNAL_IP}/accounts"

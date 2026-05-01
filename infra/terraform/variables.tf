@@ -30,3 +30,15 @@ variable "github_deployer_service_account_email" {
   description = "Existing bootstrap service account email used by GitHub Actions for deployment."
   type        = string
 }
+
+variable "enable_gke_autopilot" {
+  description = "When true, create a temporary GKE Autopilot cluster for the live Kubernetes demo."
+  type        = bool
+  default     = false
+}
+
+variable "gke_cluster_name" {
+  description = "Name of the optional GKE Autopilot cluster."
+  type        = string
+  default     = "mobile-platform-lab-autopilot"
+}

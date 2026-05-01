@@ -20,7 +20,7 @@ Terraform is responsible for foundational cloud resources:
 - IAM permissions for deploy and runtime access.
 - IAM access for an existing GitHub Actions deployer service account.
 - Remote Terraform state in GCS is used by GitHub Actions, but the state bucket itself is a one-time bootstrap resource.
-- Container API is enabled so a temporary GKE Autopilot cluster can be created for the live Kubernetes demo.
+- Optional temporary GKE Autopilot cluster for the live Kubernetes demo, controlled by `enable_gke_autopilot`.
 
 Terraform intentionally does not own the GitHub OIDC bootstrap resources:
 
@@ -51,6 +51,14 @@ GitHub Actions remains responsible for application release:
 
 ```text
 GitHub Actions -> Docker build -> Artifact Registry push -> Cloud Run deploy
+```
+
+For the optional Kubernetes demo:
+
+```text
+Terraform Apply with enable_gke_autopilot=true
+-> Deploy Backend To GKE
+-> Terraform Destroy
 ```
 
 Manual workflow order:
@@ -129,3 +137,5 @@ For a real team:
 ## Explanation
 
 > In this lab I first used `gcloud` manually to understand the working deployment path. I then moved application deployment into GitHub Actions. Terraform is added as the next IaC layer to describe the repeatable app foundation: APIs, Artifact Registry, Secret Manager metadata, runtime identity, and IAM. I intentionally keep secret values out of Terraform and leave GitHub OIDC bootstrap outside this module so GitHub Actions can use Terraform to recreate the app foundation safely.
+
+> After proving GKE manually, I added an optional Terraform-managed GKE Autopilot cluster. It is disabled by default to avoid accidental cost and enabled only for the live Kubernetes demo.

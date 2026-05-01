@@ -2,6 +2,16 @@ name: Terraform Apply
 
 on:
   workflow_dispatch:
+    inputs:
+      enable_gke_autopilot:
+        description: Create a temporary GKE Autopilot cluster
+        required: true
+        default: false
+        type: boolean
+      gke_cluster_name:
+        description: Optional GKE Autopilot cluster name
+        required: true
+        default: mobile-platform-lab-autopilot
 
 env:
   TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
@@ -10,6 +20,8 @@ env:
   TF_VAR_demo_secret_id: demo-runtime-secret
   TF_VAR_github_repository: ${{ github.repository }}
   TF_VAR_github_deployer_service_account_email: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+  TF_VAR_enable_gke_autopilot: ${{ inputs.enable_gke_autopilot }}
+  TF_VAR_gke_cluster_name: ${{ inputs.gke_cluster_name }}
 
 jobs:
   apply:

@@ -17,3 +17,13 @@ output "github_deployer_service_account" {
   description = "Existing bootstrap service account used by GitHub Actions."
   value       = var.github_deployer_service_account_email
 }
+
+output "gke_autopilot_cluster_name" {
+  description = "Optional GKE Autopilot cluster name. Null when disabled."
+  value       = var.enable_gke_autopilot ? google_container_cluster.autopilot[0].name : null
+}
+
+output "gke_autopilot_cluster_location" {
+  description = "Optional GKE Autopilot cluster location. Null when disabled."
+  value       = var.enable_gke_autopilot ? google_container_cluster.autopilot[0].location : null
+}

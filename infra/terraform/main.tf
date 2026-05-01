@@ -67,3 +67,18 @@ resource "google_secret_manager_secret_iam_member" "runtime_can_access_demo_secr
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.cloud_run_runtime.email}"
 }
+
+resource "google_container_cluster" "autopilot" {
+  count = var.enable_gke_autopilot ? 1 : 0
+
+  name                = var.gke_cluster_name
+  location            = var.region
+  enable_autopilot    = true
+  deletion_protection = false
+
+  release_channel {
+    channel = "REGULAR"
+  }
+
+  depends_on = [google_project_service.required]
+}

@@ -285,6 +285,7 @@ The `infra/terraform/` folder describes the GCP foundation as Terraform:
 - IAM bindings.
 - Access for an existing GitHub Actions deployer service account.
 - Container API support for the optional live GKE Autopilot demo.
+- Optional Terraform-managed GKE Autopilot cluster for the live Kubernetes demo.
 
 Terraform does not store secret values, does not create service account JSON keys, and does not own the GitHub OIDC bootstrap resources. The GitHub workflows use GCS remote state through a `TF_STATE_BUCKET` repository variable.
 
@@ -329,7 +330,7 @@ Kubernetes discussion path:
 Docker image -> Artifact Registry -> GKE Autopilot -> Kubernetes manifests
 ```
 
-Cloud Run is the practical low-complexity path. GKE is included for Kubernetes platform discussion and should be used carefully because clusters can create ongoing cost. For the live GKE LoadBalancer walkthrough, see `docs/gke-live-loadbalancer-demo.md`.
+Cloud Run is the practical low-complexity path. GKE is included for Kubernetes platform discussion and should be used carefully because clusters can create ongoing cost. The live GKE LoadBalancer walkthrough uses Terraform to create the optional Autopilot cluster and GitHub Actions to deploy the backend to Kubernetes. See `docs/gke-live-loadbalancer-demo.md`.
 
 ## Certificate Automation
 
