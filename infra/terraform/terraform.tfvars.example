@@ -1,0 +1,7 @@
+project_id        = "your-gcp-project-id"
+github_repository = "your-github-user/mobile-platform-reliability-lab"
+
+# Optional overrides:
+# region                 = "northamerica-northeast1"
+# artifact_repository_id = "mobile-platform-lab"
+# demo_secret_id         = "demo-runtime-secret"

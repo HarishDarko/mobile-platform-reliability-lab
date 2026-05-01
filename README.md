@@ -18,6 +18,7 @@ It is intentionally not enterprise scale. The point is to show initiative, techn
 - GitHub Actions CI for backend, mobile, Docker, Kubernetes manifests, certificate automation, Ansible, gateway, and Apigee proxy XML validation.
 - GitHub Actions deployment to Cloud Run using Google Cloud Workload Identity Federation instead of service account keys.
 - GCP Secret Manager runtime secret injection without exposing secret values.
+- Terraform foundation for repeatable GCP resource provisioning.
 - Kubernetes manifests for GKE/platform discussion.
 - Python certificate expiry automation and Ansible configuration automation.
 - API management concepts through a local gateway simulator and an Apigee-style proxy bundle.
@@ -34,9 +35,12 @@ flowchart LR
     CloudRun --> Metrics["/metrics<br/>/slow /error"]
     Actions["GitHub Actions"] --> Checks["CI checks<br/>tests lint typecheck kustomize"]
     Actions --> Deploy["Deploy workflow<br/>OIDC to GCP"]
+    Terraform["Terraform IaC<br/>GCP foundation"] -.-> Deploy
     Deploy --> Registry["Artifact Registry<br/>Docker image"]
     Registry --> CloudRun
+    Terraform -.-> Registry
     SecretManager["GCP Secret Manager"] --> CloudRun
+    Terraform -.-> SecretManager
     K8s["Kubernetes manifests<br/>GKE-ready discussion"] -.-> CloudRun
     Ansible["Ansible playbook<br/>syntax checked in CI"] --> Certs["Python certificate monitor"]
     Certs --> Alerts["OK / WARNING / CRITICAL"]
@@ -50,6 +54,7 @@ flowchart LR
 - Runtime secret is injected from GCP Secret Manager and verified by `/health` without exposing the value.
 - Apigee proxy bundle XML is validated in CI.
 - Ansible playbook syntax is validated in CI.
+- Terraform formatting and validation run in CI.
 - Kubernetes manifests render with Kustomize in CI.
 
 ## Folder Map
@@ -59,6 +64,7 @@ flowchart LR
 - `apigee/` - Apigee-style proxy bundle with API key, quota, spike arrest, and target routing policy examples.
 - `mobile/` - Expo React Native TypeScript app that calls the backend through an environment-based API URL.
 - `k8s/` - Kubernetes namespace, deployment, service, config, secret placeholder, and optional ingress examples.
+- `infra/terraform/` - Terraform foundation for GCP APIs, Artifact Registry, Secret Manager, IAM, and Workload Identity Federation.
 - `automation/` - Python certificate expiry monitor.
 - `ansible/` - Inventory, variables, and playbook examples for deploying or scheduling automation.
 - `.github/workflows/` - CI checks plus a manual Cloud Run deployment workflow.
@@ -213,6 +219,7 @@ It currently validates:
 - Mobile TypeScript validation with `npm run typecheck`.
 - Mobile linting with `npm run lint`.
 - Kubernetes manifest rendering with `kubectl kustomize`.
+- Terraform formatting and validation.
 - Certificate automation tests and linting.
 - Ansible playbook syntax validation.
 - Apigee proxy XML validation.
@@ -254,6 +261,31 @@ kubectl delete namespace mobile-platform-lab
 ```
 
 For a real GCP cluster, the local image name would be replaced with an Artifact Registry image path.
+
+## Infrastructure As Code
+
+The `infra/terraform/` folder describes the GCP foundation as Terraform:
+
+- Required GCP APIs.
+- Artifact Registry repository.
+- Secret Manager secret metadata.
+- GitHub deployer service account.
+- Cloud Run runtime service account.
+- IAM bindings.
+- Workload Identity Federation for GitHub Actions.
+
+Terraform does not store secret values and does not create service account JSON keys.
+
+Validate locally:
+
+```powershell
+cd infra\terraform
+terraform fmt -check
+terraform init -backend=false
+terraform validate
+```
+
+This lab keeps Terraform focused on foundation provisioning while GitHub Actions handles application deployment.
 
 ## GCP Deployment Notes
 
@@ -342,6 +374,6 @@ Mobile platform engineers often sit between app teams, API teams, CI/CD systems,
 ## Future Improvements
 
 - Add more operational runbooks.
-- Add Terraform for repeatable GCP resource provisioning.
+- Add Terraform remote state example using a GCS backend.
 - Add optional GKE deployment walkthrough.
 - Add sample Splunk or Dynatrace dashboard/query examples.
