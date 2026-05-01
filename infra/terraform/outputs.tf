@@ -14,11 +14,6 @@ output "demo_secret_id" {
 }
 
 output "github_deployer_service_account" {
-  description = "Service account GitHub Actions can impersonate."
-  value       = google_service_account.github_deployer.email
-}
-
-output "workload_identity_provider" {
-  description = "Provider resource name for google-github-actions/auth."
-  value       = google_iam_workload_identity_pool_provider.github.name
+  description = "Existing bootstrap service account used by GitHub Actions."
+  value       = var.github_deployer_service_account_email
 }

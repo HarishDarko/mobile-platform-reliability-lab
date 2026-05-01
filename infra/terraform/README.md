@@ -16,15 +16,34 @@ Terraform is responsible for foundational cloud resources:
 - Required GCP APIs.
 - Artifact Registry repository for Docker images.
 - Secret Manager secret metadata.
-- Dedicated GitHub deployer service account.
 - Dedicated Cloud Run runtime service account.
 - IAM permissions for deploy and runtime access.
-- Workload Identity Federation pool/provider for GitHub Actions OIDC.
+- IAM access for an existing GitHub Actions deployer service account.
+
+Terraform intentionally does not own the GitHub OIDC bootstrap resources:
+
+- Workload Identity Pool.
+- Workload Identity Provider.
+- GitHub deployer service account creation.
+- GitHub Actions secrets and variables.
+
+Those bootstrap resources must exist before GitHub Actions can run Terraform.
 
 GitHub Actions remains responsible for application release:
 
 ```text
 GitHub Actions -> Docker build -> Artifact Registry push -> Cloud Run deploy
+```
+
+Manual workflow order:
+
+```text
+Terraform Plan
+-> Terraform Apply
+-> Deploy Backend To Cloud Run
+-> verify /health
+-> delete Cloud Run service
+-> Terraform Destroy
 ```
 
 ## Why Cloud Run Service Is Not Managed Here
@@ -74,6 +93,10 @@ Apply only if you intentionally want Terraform to create or manage these resourc
 terraform apply
 ```
 
+The GitHub Actions `Terraform Apply` workflow also adds a fake demo secret version after the secret metadata is created. Real teams should use approved secret loading or rotation processes rather than storing secret values in Terraform.
+
+Before destroying the foundation, delete the Cloud Run service that uses the Artifact Registry image and Secret Manager secret.
+
 ## Production Notes
 
 For a real team:
@@ -87,4 +110,4 @@ For a real team:
 
 ## Explanation
 
-> In this lab I first used `gcloud` manually to understand the working deployment path. I then moved application deployment into GitHub Actions. Terraform is added as the next IaC layer to describe the repeatable cloud foundation: APIs, Artifact Registry, Secret Manager, service accounts, IAM, and Workload Identity Federation. I intentionally keep secret values out of Terraform and avoid mixing Terraform ownership with CI/CD image updates unless that ownership model is clearly defined.
+> In this lab I first used `gcloud` manually to understand the working deployment path. I then moved application deployment into GitHub Actions. Terraform is added as the next IaC layer to describe the repeatable app foundation: APIs, Artifact Registry, Secret Manager metadata, runtime identity, and IAM. I intentionally keep secret values out of Terraform and leave GitHub OIDC bootstrap outside this module so GitHub Actions can use Terraform to recreate the app foundation safely.

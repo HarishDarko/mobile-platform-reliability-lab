@@ -1,5 +1,6 @@
-project_id        = "your-gcp-project-id"
-github_repository = "your-github-user/mobile-platform-reliability-lab"
+project_id                             = "your-gcp-project-id"
+github_repository                      = "your-github-user/mobile-platform-reliability-lab"
+github_deployer_service_account_email  = "github-cloud-run-deployer@your-gcp-project-id.iam.gserviceaccount.com"
 
 # Optional overrides:
 # region                 = "northamerica-northeast1"

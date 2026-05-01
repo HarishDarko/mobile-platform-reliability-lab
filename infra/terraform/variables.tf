@@ -22,18 +22,11 @@ variable "demo_secret_id" {
 }
 
 variable "github_repository" {
-  description = "GitHub repository allowed to impersonate the deployer service account, in owner/name form."
+  description = "GitHub repository that deploys the lab, in owner/name form. Used for documentation and future policy expansion."
   type        = string
 }
 
-variable "workload_identity_pool_id" {
-  description = "Workload Identity Pool ID for GitHub Actions OIDC."
+variable "github_deployer_service_account_email" {
+  description = "Existing bootstrap service account email used by GitHub Actions for deployment."
   type        = string
-  default     = "github-actions"
-}
-
-variable "workload_identity_provider_id" {
-  description = "Workload Identity Pool Provider ID for GitHub Actions OIDC."
-  type        = string
-  default     = "github"
 }

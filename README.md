@@ -67,7 +67,7 @@ flowchart LR
 - `infra/terraform/` - Terraform foundation for GCP APIs, Artifact Registry, Secret Manager, IAM, and Workload Identity Federation.
 - `automation/` - Python certificate expiry monitor.
 - `ansible/` - Inventory, variables, and playbook examples for deploying or scheduling automation.
-- `.github/workflows/` - CI checks plus a manual Cloud Run deployment workflow.
+- `.github/workflows/` - CI checks plus manual Terraform and Cloud Run deployment workflows.
 
 ## Current Status
 
@@ -236,6 +236,18 @@ It uses GitHub Actions secrets as placeholders for Google Cloud authentication. 
 
 The deployment workflow also demonstrates runtime secret injection from GCP Secret Manager. The backend health endpoint reports whether the runtime secret is configured without exposing the secret value.
 
+The Terraform workflows are manual:
+
+- `.github/workflows/terraform-plan.yml`
+- `.github/workflows/terraform-apply.yml`
+- `.github/workflows/terraform-destroy.yml`
+
+Recommended demo order:
+
+```text
+Terraform Apply -> Cloud Run Deploy -> verify /health -> delete Cloud Run -> Terraform Destroy
+```
+
 ## Kubernetes
 
 The `k8s/` folder contains manifest examples for running the backend in Kubernetes.
@@ -286,6 +298,17 @@ terraform validate
 ```
 
 This lab keeps Terraform focused on foundation provisioning while GitHub Actions handles application deployment.
+
+Manual GitHub Actions flow:
+
+```text
+Terraform Plan  -> review planned foundation resources
+Terraform Apply -> create app foundation and add fake demo secret version
+Deploy Backend To Cloud Run -> build/push/deploy the backend image
+Terraform Destroy -> remove Terraform-managed foundation after Cloud Run is deleted
+```
+
+Before running `Terraform Destroy`, delete the Cloud Run service so the Artifact Registry repository can be removed cleanly.
 
 ## GCP Deployment Notes
 

@@ -14,6 +14,7 @@ env:
   REPOSITORY: ${{ vars.ARTIFACT_REPOSITORY }}
   IMAGE_NAME: mobile-platform-reliability-api
   SERVICE_NAME: mobile-platform-api
+  RUNTIME_SERVICE_ACCOUNT: cloud-run-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
 jobs:
   deploy:
@@ -58,6 +59,7 @@ jobs:
             --allow-unauthenticated \
             --set-env-vars ALLOWED_ORIGINS="*" \
             --set-secrets DEMO_RUNTIME_SECRET=demo-runtime-secret:latest \
+            --service-account "${RUNTIME_SERVICE_ACCOUNT}" \
             --project "${PROJECT_ID}"
 
       - name: Print service URL
