@@ -41,6 +41,13 @@ IAM bindings
 GKE Autopilot cluster
 ```
 
+Bootstrap lesson from the live test:
+
+```text
+The GitHub deployer service account needed roles/container.admin to create the cluster.
+It also needed roles/compute.viewer because Terraform reads GKE-managed instance group metadata.
+```
+
 ## 2. Build Image And Deploy To GKE
 
 Run this from GitHub Actions:

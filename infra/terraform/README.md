@@ -37,6 +37,15 @@ The project also needs the Cloud Resource Manager API enabled before Terraform c
 gcloud services enable cloudresourcemanager.googleapis.com --project YOUR_PROJECT_ID
 ```
 
+When `enable_gke_autopilot=true`, the GitHub deployer identity also needs GKE and Compute read permissions as bootstrap access:
+
+```text
+roles/container.admin
+roles/compute.viewer
+```
+
+`roles/compute.viewer` is needed because the Terraform Google provider reads GKE-managed instance group metadata while finalizing cluster state.
+
 `backend.tf` contains a non-secret placeholder bucket so Terraform validation works in CI. The GitHub Actions workflows override that placeholder at runtime using these repository variables and secrets:
 
 - Variable: `GCP_PROJECT_ID`
