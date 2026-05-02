@@ -53,6 +53,24 @@ Check metrics:
 Invoke-RestMethod http://127.0.0.1:8000/metrics
 ```
 
+Generate a full observability traffic sample:
+
+```powershell
+.\scripts\emit-observability-traffic.ps1 -ApiBaseUrl "http://127.0.0.1:8000"
+```
+
+For Cloud Run:
+
+```powershell
+.\scripts\emit-observability-traffic.ps1 -ApiBaseUrl "https://YOUR-CLOUD-RUN-URL"
+```
+
+Check recent Cloud Run logs:
+
+```powershell
+gcloud run services logs read mobile-platform-api --region northamerica-northeast1 --limit 50
+```
+
 ## Investigation Path
 
 1. Confirm mobile app API base URL.
@@ -63,6 +81,37 @@ Invoke-RestMethod http://127.0.0.1:8000/metrics
 6. Search logs by request ID and timestamp.
 7. Check latency and error-rate metrics.
 8. Identify whether the issue is client config, gateway, backend, dependency, or infrastructure.
+
+## Cloud Observability Checks
+
+Use these GCP Console paths after the API is deployed:
+
+```text
+Cloud Run -> mobile-platform-api -> Logs
+Cloud Run -> mobile-platform-api -> Metrics
+Monitoring -> Metrics Explorer
+Monitoring -> Uptime checks
+Monitoring -> Alerting
+```
+
+Look for:
+
+- Increased 5xx responses after `/error`.
+- Increased latency after `/slow`.
+- Matching `request_id` in response headers and logs.
+- Whether the failure is isolated to one endpoint or broad across the service.
+
+Splunk-style question:
+
+```text
+Can I find the exact failed request by request_id, path, status_code, and timestamp?
+```
+
+Dynatrace-style question:
+
+```text
+Did service health, latency, failure rate, or dependency behavior change after a deployment?
+```
 
 ## Likely Causes
 
@@ -98,4 +147,3 @@ Next update:
 - Latency back to normal.
 - Certificate status verified if relevant.
 - Follow-up action created.
-

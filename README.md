@@ -131,8 +131,9 @@ Phase 7 adds Ansible automation:
 Phase 8 adds observability and incident docs:
 
 - Structured logging explanation.
-- Metrics, health, slow, and error endpoint mapping.
-- Splunk and Dynatrace discussion.
+- Prometheus-style metrics, health, slow, and error endpoint mapping.
+- Cloud Logging and Cloud Monitoring mapping.
+- Splunk and Dynatrace discussion through transferable observability signals.
 - Mobile API incident runbook.
 
 Phase 9 adds mobile DevOps overview:
@@ -368,7 +369,19 @@ See:
 - `docs/observability.md`
 - `docs/runbooks/mobile-api-incident.md`
 
-The lab demonstrates observability through structured logs, `/health`, `/metrics`, `/slow`, `/error`, and request IDs. These map to the kind of troubleshooting a mobile platform team would do with Splunk, Dynatrace, gateway logs, and backend logs.
+The lab demonstrates observability through structured JSON logs, `/health`, Prometheus-style `/metrics`, `/slow`, `/error`, and request IDs. When deployed to Cloud Run, these signals appear in Cloud Logging and Cloud Monitoring. They map to the kind of troubleshooting a mobile platform team would do with Splunk, Dynatrace, gateway logs, and backend logs.
+
+Generate local or cloud incident traffic:
+
+```powershell
+.\scripts\emit-observability-traffic.ps1 -ApiBaseUrl "http://127.0.0.1:8000"
+```
+
+For a deployed Cloud Run service:
+
+```powershell
+.\scripts\emit-observability-traffic.ps1 -ApiBaseUrl "https://YOUR-CLOUD-RUN-URL"
+```
 
 ## Mobile DevOps Overview
 

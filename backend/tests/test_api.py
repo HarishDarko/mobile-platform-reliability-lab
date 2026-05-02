@@ -62,9 +62,22 @@ def test_error_endpoint_simulates_failure() -> None:
     assert response.json()["detail"] == "Simulated backend failure"
 
 
+def test_request_id_header_is_preserved_for_log_correlation() -> None:
+    response = client.get("/health", headers={"x-request-id": "demo-request-123"})
+
+    assert response.status_code == 200
+    assert response.headers["x-request-id"] == "demo-request-123"
+
+
 def test_metrics_returns_prometheus_style_text() -> None:
+    client.get("/health")
+    client.get("/error")
     response = client.get("/metrics")
 
     assert response.status_code == 200
     assert "lab_requests_total" in response.text
     assert "lab_payments_total" in response.text
+    assert "lab_errors_total" in response.text
+    assert 'lab_http_requests_total{method="GET",path="/health",status_code="200"}' in response.text
+    assert 'lab_http_requests_total{method="GET",path="/error",status_code="500"}' in response.text
+    assert 'lab_http_request_duration_seconds_sum{method="GET",path="/health"}' in response.text
