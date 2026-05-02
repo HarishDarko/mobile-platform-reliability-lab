@@ -383,6 +383,8 @@ For a deployed Cloud Run service:
 .\scripts\emit-observability-traffic.ps1 -ApiBaseUrl "https://YOUR-CLOUD-RUN-URL"
 ```
 
+The traffic script can also send mobile client context headers such as `x-client-platform`, `x-app-version`, and `x-app-environment`. This helps practice questions like whether an incident affects iOS, Android, one app version, one environment, or all clients.
+
 ## Mobile DevOps Overview
 
 See `docs/mobile-devops-overview.md`.

@@ -60,6 +60,9 @@ The backend emits structured JSON logs with fields such as:
 - `path`
 - `status_code`
 - `duration_ms`
+- `client_platform`
+- `app_version`
+- `app_environment`
 
 Structured logs are easier to search in log platforms than free-form text.
 
@@ -76,7 +79,10 @@ Example completed request log:
   "method": "GET",
   "path": "/accounts",
   "status_code": 200,
-  "duration_ms": 12.4
+  "duration_ms": 12.4,
+  "client_platform": "ios",
+  "app_version": "1.0.0",
+  "app_environment": "demo"
 }
 ```
 
@@ -94,6 +100,7 @@ The metrics endpoint exposes Prometheus-style text for:
 - total accepted demo payments
 - total 5xx errors
 - requests by method, path, and status code
+- requests by mobile client platform, app version, and environment
 - request duration sum, count, and maximum by method and path
 
 In a production system, metrics would likely be exported to Prometheus, Cloud Monitoring, Dynatrace, or another observability platform.
@@ -103,8 +110,29 @@ Example metrics:
 ```text
 lab_http_requests_total{method="GET",path="/health",status_code="200"} 3
 lab_http_requests_total{method="GET",path="/error",status_code="500"} 2
+lab_mobile_client_requests_total{client_platform="ios",app_version="1.0.0",app_environment="demo"} 8
 lab_http_request_duration_seconds_max{method="GET",path="/slow"} 2.004321
 ```
+
+### Mobile Client Context
+
+The backend reads these optional headers:
+
+```text
+x-client-platform: ios | android | web
+x-app-version: 1.0.0
+x-app-environment: demo | dev | qa | prod-like
+```
+
+These values make troubleshooting more realistic. In a real mobile platform incident, the first question is often whether the issue affects:
+
+- iOS only
+- Android only
+- one app version
+- one environment
+- all users
+
+This lab keeps the data fake, but the request metadata supports that investigation style.
 
 ### Incident Simulation
 
@@ -144,6 +172,12 @@ For Cloud Run:
 .\scripts\emit-observability-traffic.ps1 -ApiBaseUrl "https://YOUR-CLOUD-RUN-URL"
 ```
 
+Simulate Android traffic:
+
+```powershell
+.\scripts\emit-observability-traffic.ps1 -ApiBaseUrl "https://YOUR-CLOUD-RUN-URL" -ClientPlatform "android" -AppVersion "1.0.1" -AppEnvironment "demo"
+```
+
 This sends normal, slow, and error traffic so logs and metrics have useful signal.
 
 After traffic, check:
@@ -158,6 +192,7 @@ Cloud Logging:
 
 - Search JSON logs by `request_id`.
 - Filter by `path="/error"` or `status_code=500`.
+- Filter by `client_platform`, `app_version`, or `app_environment`.
 - Investigate exact request timestamps and durations.
 
 Cloud Monitoring:
@@ -214,6 +249,10 @@ index=mobile-platform-lab event="request_completed" path="/slow" | stats avg(dur
 index=mobile-platform-lab event="request_completed" | stats count by path status_code
 ```
 
+```text
+index=mobile-platform-lab event="request_completed" client_platform="ios" app_version="1.0.0"
+```
+
 ## Dynatrace Mapping
 
 Dynatrace is useful for APM, service health, latency, traces, dependency maps, and alerting.
@@ -232,6 +271,7 @@ For this lab:
 - `/error` maps to failure-rate analysis.
 - `/health` maps to availability checks.
 - Request IDs map to cross-system correlation.
+- Client platform and app version map to mobile blast-radius analysis.
 - Cloud Run metrics map to service-level monitoring.
 - Cloud Logging maps to log analysis and incident investigation.
 

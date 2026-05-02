@@ -2,7 +2,10 @@ param(
     [string]$ApiBaseUrl = "http://127.0.0.1:8000",
     [int]$NormalRequests = 3,
     [int]$SlowRequests = 2,
-    [int]$ErrorRequests = 2
+    [int]$ErrorRequests = 2,
+    [string]$ClientPlatform = "ios",
+    [string]$AppVersion = "1.0.0",
+    [string]$AppEnvironment = "demo"
 )
 
 $ErrorActionPreference = "Stop"
@@ -16,7 +19,12 @@ function Invoke-LabRequest {
 
     $requestId = "demo-$([guid]::NewGuid().ToString())"
     $url = "$ApiBaseUrl$Path"
-    $headers = @{ "x-request-id" = $requestId }
+    $headers = @{
+        "x-request-id" = $requestId
+        "x-client-platform" = $ClientPlatform
+        "x-app-version" = $AppVersion
+        "x-app-environment" = $AppEnvironment
+    }
     $started = Get-Date
 
     try {
@@ -49,6 +57,7 @@ function Invoke-LabRequest {
 }
 
 Write-Host "Sending observability traffic to $ApiBaseUrl"
+Write-Host "Client context: platform=$ClientPlatform app_version=$AppVersion environment=$AppEnvironment"
 
 if ($NormalRequests -gt 0) {
     1..$NormalRequests | ForEach-Object {

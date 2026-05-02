@@ -70,7 +70,14 @@ def test_request_id_header_is_preserved_for_log_correlation() -> None:
 
 
 def test_metrics_returns_prometheus_style_text() -> None:
-    client.get("/health")
+    client.get(
+        "/health",
+        headers={
+            "x-client-platform": "ios",
+            "x-app-version": "1.0.0",
+            "x-app-environment": "demo",
+        },
+    )
     client.get("/error")
     response = client.get("/metrics")
 
@@ -80,4 +87,5 @@ def test_metrics_returns_prometheus_style_text() -> None:
     assert "lab_errors_total" in response.text
     assert 'lab_http_requests_total{method="GET",path="/health",status_code="200"}' in response.text
     assert 'lab_http_requests_total{method="GET",path="/error",status_code="500"}' in response.text
+    assert 'lab_mobile_client_requests_total{client_platform="ios",app_version="1.0.0",app_environment="demo"}' in response.text
     assert 'lab_http_request_duration_seconds_sum{method="GET",path="/health"}' in response.text

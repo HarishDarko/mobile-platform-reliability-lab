@@ -39,6 +39,7 @@ REQUEST_COUNT = 0
 PAYMENT_COUNT = 0
 ERROR_COUNT = 0
 REQUESTS_BY_ROUTE: dict[tuple[str, str, int], int] = defaultdict(int)
+REQUESTS_BY_CLIENT_CONTEXT: dict[tuple[str, str, str], int] = defaultdict(int)
 REQUEST_DURATION_SECONDS_SUM_BY_ROUTE: dict[tuple[str, str], float] = defaultdict(float)
 REQUEST_DURATION_SECONDS_COUNT_BY_ROUTE: dict[tuple[str, str], int] = defaultdict(int)
 REQUEST_DURATION_SECONDS_MAX_BY_ROUTE: dict[tuple[str, str], float] = defaultdict(float)
@@ -58,6 +59,9 @@ async def request_logging_middleware(request: Request, call_next: Any) -> Respon
     start = time.perf_counter()
     method = request.method
     path = request.url.path
+    client_platform = request.headers.get("x-client-platform", "unknown")
+    app_version = request.headers.get("x-app-version", "unknown")
+    app_environment = request.headers.get("x-app-environment", "unknown")
 
     logger.info(
         "request_started",
@@ -67,6 +71,9 @@ async def request_logging_middleware(request: Request, call_next: Any) -> Respon
             "method": method,
             "path": path,
             "client": request.client.host if request.client else None,
+            "client_platform": client_platform,
+            "app_version": app_version,
+            "app_environment": app_environment,
         },
     )
     response = await call_next(request)
@@ -76,6 +83,7 @@ async def request_logging_middleware(request: Request, call_next: Any) -> Respon
     response.headers["x-request-id"] = request_id
 
     REQUESTS_BY_ROUTE[(method, path, status_code)] += 1
+    REQUESTS_BY_CLIENT_CONTEXT[(client_platform, app_version, app_environment)] += 1
     REQUEST_DURATION_SECONDS_SUM_BY_ROUTE[(method, path)] += duration_seconds
     REQUEST_DURATION_SECONDS_COUNT_BY_ROUTE[(method, path)] += 1
     REQUEST_DURATION_SECONDS_MAX_BY_ROUTE[(method, path)] = max(
@@ -94,6 +102,9 @@ async def request_logging_middleware(request: Request, call_next: Any) -> Respon
             "path": path,
             "status_code": status_code,
             "duration_ms": duration_ms,
+            "client_platform": client_platform,
+            "app_version": app_version,
+            "app_environment": app_environment,
         },
     )
     return response
@@ -160,6 +171,19 @@ def metrics() -> str:
         lines.append(
             "lab_http_requests_total"
             f'{{method="{method}",path="{path}",status_code="{status_code}"}} {count}'
+        )
+
+    lines.extend(
+        [
+            "# HELP lab_mobile_client_requests_total API requests by mobile client context.",
+            "# TYPE lab_mobile_client_requests_total counter",
+        ]
+    )
+    for (client_platform, app_version, app_environment), count in sorted(REQUESTS_BY_CLIENT_CONTEXT.items()):
+        lines.append(
+            "lab_mobile_client_requests_total"
+            f'{{client_platform="{client_platform}",app_version="{app_version}",'
+            f'app_environment="{app_environment}"}} {count}'
         )
 
     lines.extend(

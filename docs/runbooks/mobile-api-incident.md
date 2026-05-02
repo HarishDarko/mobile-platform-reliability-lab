@@ -65,6 +65,12 @@ For Cloud Run:
 .\scripts\emit-observability-traffic.ps1 -ApiBaseUrl "https://YOUR-CLOUD-RUN-URL"
 ```
 
+Simulate one affected mobile segment:
+
+```powershell
+.\scripts\emit-observability-traffic.ps1 -ApiBaseUrl "https://YOUR-CLOUD-RUN-URL" -ClientPlatform "android" -AppVersion "1.0.1" -AppEnvironment "demo"
+```
+
 Check recent Cloud Run logs:
 
 ```powershell
@@ -100,6 +106,7 @@ Look for:
 - Increased latency after `/slow`.
 - Matching `request_id` in response headers and logs.
 - Whether the failure is isolated to one endpoint or broad across the service.
+- Whether the failure is isolated to one platform, app version, or environment.
 
 Splunk-style question:
 
